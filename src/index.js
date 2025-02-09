@@ -1,19 +1,14 @@
-import {
-  Client,
-  IntentsBitField,
-  Message,
-  SlashCommandBuilder,
-} from 'discord.js';
+import { Client, GatewayIntentBits } from 'discord.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
 
 const client = new Client({
   intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMembers,
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.MessageContent,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
   ],
 });
 
@@ -24,7 +19,7 @@ client.on('ready', async () => {
   setInterval(async () => {
     const cutoff = Date.now() - process.env.MESSAGE_MAX_AGE;
 
-    /** @type {Message[]} */
+    /** @type {import('discord.js').Message[]} */
     const messages = await channel.messages.fetch({ limit: 100 });
     messages.forEach(async (message) => {
       // Ignore messages whether the auther is this bot.
