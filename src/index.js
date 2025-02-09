@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { InstanceDB } from './instance.js';
 
 import dotenv from 'dotenv';
-import { useCommands } from './bot.js';
+import { useCommands } from './bot/commands.js';
 dotenv.config();
 
 const client = new Client({

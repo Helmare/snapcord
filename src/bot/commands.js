@@ -16,7 +16,13 @@ export async function useCommands(client) {
   });
   client.on('interactionCreate', async (interaction) => {
     if (interaction.commandName === 'snap') {
-      await interaction.reply('I should probably do something...');
+      _executeSnap(interaction);
     }
   });
+}
+/**
+ * @param {import('discord.js').Interaction} interaction
+ */
+async function _executeSnap(interaction) {
+  await interaction.reply('I should probably do something...');
 }
