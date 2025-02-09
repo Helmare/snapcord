@@ -1,6 +1,6 @@
 {
   "name": "snapcord",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "chalk": "^5.4.1",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7"
   },
