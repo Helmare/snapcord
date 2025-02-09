@@ -1,11 +1,12 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import chalk from 'chalk';
-import { InstanceDB } from './instance.js';
+import { InstanceRepository } from './instance.js';
 
 import dotenv from 'dotenv';
 import { useCommands } from './bot/commands.js';
 dotenv.config();
 
+const repo = new InstanceRepository(process.env.DATABASE_URL);
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -14,23 +15,15 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+
 useCommands(client);
-
-const db = new InstanceDB();
-/** @type {import('./instance.js').Instance[]} */
-let instances;
-
-try {
-  instances = await db.fetch();
-} catch ({ message, code }) {
-  console.error(chalk.redBright(`NEON -- ${message} [${code}]`));
-  process.exit(1);
-}
 
 client.on('ready', async () => {
   _logTitle(`${client.user.tag} v${process.env.npm_package_version} is Online`);
 
   setInterval(async () => {
+    const instances = await repo.all();
+
     const startTime = Date.now();
     const stats = {
       deletedMessages: 0,
