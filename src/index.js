@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { InstanceDB } from './instance.js';
 
 import dotenv from 'dotenv';
+import { useCommands } from './bot.js';
 dotenv.config();
 
 const client = new Client({
@@ -13,6 +14,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
   ],
 });
+useCommands(client);
 
 const db = new InstanceDB();
 /** @type {import('./instance.js').Instance[]} */
@@ -27,6 +29,7 @@ try {
 
 client.on('ready', async () => {
   _logTitle(`${client.user.tag} v${process.env.npm_package_version} is Online`);
+
   setInterval(async () => {
     const startTime = Date.now();
     const stats = {
