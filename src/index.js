@@ -31,7 +31,7 @@ client.on('ready', async () => {
       if (!channel) break;
 
       const messages = await channel.messages.fetch({ limit: 100 });
-      logger.info(`fetched ${messages.size} messages`);
+      logger.info({ count: messages.size }, 'fetched messages');
       const cutoff = Date.now() - instance.max_message_age;
 
       for (const [id, message] of messages) {
@@ -44,7 +44,7 @@ client.on('ready', async () => {
         // Delete the rest of the messages.
         try {
           await message.delete();
-          logger.info(`deleted message ${message.id} by ${message.author.tag}`);
+          logger.info({ id: message.id }, 'deleted message');
         } catch (err) {
           if (err.status == 404) {
             logger.warn(err);
@@ -55,7 +55,7 @@ client.on('ready', async () => {
       }
     }
 
-    logger.info(`completed in ${(Date.now() - startTime).toFixed(0)}ms`);
+    logger.info({ duration: Date.now() - startTime }, 'completed run');
   }, 10000);
 });
 /**

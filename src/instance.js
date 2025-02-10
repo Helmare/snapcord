@@ -24,9 +24,7 @@ export class InstanceRepository {
    */
   async fetch() {
     const results = await this.sql`SELECT * FROM instances;`;
-    logger.info(
-      `fetched ${results.length} instance${results.length == 1 ? '' : 's'}`
-    );
+    logger.info({ count: results.length }, 'fetched instances');
 
     this.instances = results;
     return results;
@@ -83,10 +81,10 @@ export class InstanceRepository {
     try {
       await this.sql`DELETE FROM instances WHERE id=${id};`;
       this.instances = this.instances.filter((i) => i.id != id);
-      logger.info(`deleted instance ${id}`);
+      logger.info({ id: id }, 'deleted instance');
       return true;
     } catch (err) {
-      logger.error(err, 'failed to delete instance');
+      logger.error({ instanceId: id, ...err }, 'failed to delete instance');
       return false;
     }
   }

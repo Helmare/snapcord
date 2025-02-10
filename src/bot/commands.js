@@ -65,7 +65,10 @@ export async function useCommands(client, repo) {
     } else if (interaction.commandName == 'disable') {
       _turnOff(interaction, repo);
     } else {
-      logger.warn(`unrecognized command '${interaction.commandName}'`);
+      logger.warn(
+        { commandName: interaction.commandName },
+        'unrecognized command'
+      );
     }
   });
 }
@@ -80,10 +83,10 @@ async function _turnOn(interaction, repo) {
   const channelId = channel?.id || interaction.channelId;
   const name = channel ? `<#${channel.id}>` : 'this channel';
 
-  logger.info(`enabling for channel ${channelId}`);
+  logger.info({ channelId: channelId }, 'enabling for channel');
   const instance = await repo.getByChannelId(channelId);
   if (instance) {
-    logger.warn(`instance exists for channel ${channelId}`);
+    logger.warn({ channelId: channelId }, 'instance exists for channel');
     await interaction.reply(`I'm still in ${name} 😎`);
   } else {
     const duration = interaction.options.getInteger('duration');
@@ -106,7 +109,7 @@ async function _turnOff(interaction, repo) {
   const channelId = channel?.id || interaction.channelId;
   const name = channel ? `<#${channel.id}>` : 'this channel';
 
-  logger.info(`disabling for channel ${channelId}`);
+  logger.info({ channelId: channelId }, `disabling in channel`);
   const instance = await repo.getByChannelId(channelId);
   if (instance) {
     await repo.delete(instance.id);
