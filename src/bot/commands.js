@@ -29,7 +29,9 @@ export async function useCommands(client, repo) {
               { name: '24 hours', value: 24 * 60 * 60 * 1000 },
               { name: '12 hours', value: 12 * 60 * 60 * 1000 },
               { name: '6 hours', value: 6 * 60 * 60 * 1000 },
-              { name: '15 seconds', value: 15000 },
+              { name: '4 hours', value: 4 * 60 * 60 * 1000 },
+              { name: '2 hours', value: 2 * 60 * 60 * 1000 },
+              { name: '1 hour', value: 1 * 60 * 60 * 1000 },
             ])
             .setRequired(true)
         )
