@@ -1,4 +1,9 @@
-import { ChannelType, SlashCommandBuilder, TextChannel } from 'discord.js';
+import {
+  ChannelType,
+  SlashCommandBuilder,
+  TextChannel,
+  PermissionFlagsBits,
+} from 'discord.js';
 import { InstanceRepository } from '../instance.js';
 import pino from 'pino';
 
@@ -34,7 +39,8 @@ export async function useCommands(client, repo) {
             .setDescription('Which channel to enable (this one by default).')
             .addChannelTypes([ChannelType.GuildText])
             .setRequired(false)
-        ),
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
       new SlashCommandBuilder()
         .setName('disable')
         .setDescription('Turns off snapcord in this channel.')
@@ -44,7 +50,8 @@ export async function useCommands(client, repo) {
             .setDescription('Which channel to enable (this one by default).')
             .addChannelTypes([ChannelType.GuildText])
             .setRequired(false)
-        ),
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
     ]);
     logger.info('registered commands');
   });
@@ -77,8 +84,13 @@ async function _turnOn(interaction, repo) {
     logger.warn(`instance exists for channel ${channelId}`);
     await interaction.reply(`I'm still in ${name} 😎`);
   } else {
-    await repo.create(channelId, interaction.options.getInteger('duration'));
-    await interaction.reply(`I'm in ${name} 😊`);
+    const duration = interaction.options.getInteger('duration');
+    await repo.create(channelId, duration);
+    await interaction.reply(
+      `I'm here in ${name} 😊 Messages will be deleted after ${
+        duration / (60 * 60 * 1000)
+      } hours. Save messages by reacting with 💾`
+    );
   }
 }
 /**
@@ -96,7 +108,9 @@ async function _turnOff(interaction, repo) {
   const instance = await repo.getByChannelId(channelId);
   if (instance) {
     await repo.delete(instance.id);
-    await interaction.reply(`I'm leaving ${name} 🥺`);
+    await interaction.reply(
+      `I'm leaving ${name} 🥺 Messages will no longer be deleted.`
+    );
   } else {
     await interaction.reply(`I'm not in ${name} 🤔`);
   }
