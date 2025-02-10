@@ -1,11 +1,12 @@
 import { Client, GatewayIntentBits } from 'discord.js';
-import chalk from 'chalk';
 import { InstanceRepository } from './instance.js';
+import { useCommands } from './bot/commands.js';
+import pino from 'pino';
 
 import dotenv from 'dotenv';
-import { useCommands } from './bot/commands.js';
 dotenv.config();
 
+const logger = pino();
 const repo = new InstanceRepository(process.env.DATABASE_URL);
 const client = new Client({
   intents: [
@@ -16,34 +17,24 @@ const client = new Client({
   ],
 });
 
-useCommands(client);
+useCommands(client, repo);
 
 client.on('ready', async () => {
-  _logTitle(`${client.user.tag} v${process.env.npm_package_version} is Online`);
-
+  logger.info(`${client.user.tag} is online`);
   setInterval(async () => {
-    const instances = await repo.all();
-
+    const instances = await repo.fetch();
     const startTime = Date.now();
-    const stats = {
-      deletedMessages: 0,
-      failedMessages: 0,
-      instances: instances.length,
-      time: 0,
-    };
 
     for (const instance of instances) {
-      /** @type {import('discord.js').TextChannel} */
-      const channel = await client.channels.fetch(instance.channel_id);
-      if (!channel.isTextBased()) break;
+      logger.info(instance, 'running instance');
+      const channel = await _getChannelFromInstance(instance);
+      if (!channel) break;
 
       const messages = await channel.messages.fetch({ limit: 100 });
+      logger.info(`fetched ${messages.size} messages`);
       const cutoff = Date.now() - instance.max_message_age;
 
       for (const [id, message] of messages) {
-        // Ignore messages whether the auther is this bot.
-        if (message.author.id == process.env.DISCORD_CLIENT_ID) break;
-
         // Ignore messages with the :floppy_disk: reaction.
         if (await _hasReaction(message, '💾')) break;
 
@@ -53,32 +44,39 @@ client.on('ready', async () => {
         // Delete the rest of the messages.
         try {
           await message.delete();
-          stats.deletedMessages++;
-        } catch ({ code, status, message }) {
-          console.error(
-            chalk.redBright(`DISCORD -- ${status} ${message} [${code}]`)
-          );
-          stats.failedMessages++;
+          logger.info(`deleted message ${message.id} by ${message.author.tag}`);
+        } catch (err) {
+          if (err.status == 404) {
+            logger.warn(err);
+          } else {
+            logger.error(err);
+          }
         }
       }
     }
 
-    stats.time = Date.now() - startTime;
-    console.log(stats);
+    logger.info(`completed in ${(Date.now() - startTime).toFixed(0)}ms`);
   }, 10000);
 });
 /**
- * Logs the title with vertical and horizontal padding.
- * @param {string} text
+ * Gets a channel or undefined if something went wrong.
+ * @param {import('./instance.js').Instance} instance
+ * @returns {Promise<import('discord.js').TextChannel|null|undefined>}
  */
-function _logTitle(text) {
-  text = `  ${text}  `;
-  let line = '';
-  for (let i = 0; i < text.length; i++) {
-    line += ' ';
+async function _getChannelFromInstance(instance) {
+  try {
+    const channel = await client.channels.fetch(instance.channel_id);
+    if (!channel.isTextBased()) {
+      logger.error('instance was running on non-text channel');
+      await repo.delete(instance.id);
+      return undefined;
+    }
+    return channel;
+  } catch (err) {
+    logger.error(err, 'failed to fetch channel');
+    await repo.delete(instance.id);
+    return undefined;
   }
-
-  console.log(chalk.bgHex('#5865F2')(`\n${line}\n${text}\n${line}\n`));
 }
 /**
  * Gets whether or not a message has a reaction.
