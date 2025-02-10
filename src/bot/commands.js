@@ -1,29 +1,103 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { ChannelType, SlashCommandBuilder, TextChannel } from 'discord.js';
+import { InstanceRepository } from '../instance.js';
+import pino from 'pino';
+
+const logger = pino();
 
 /**
  * Installs the commands on the client.
  * @param {import('discord.js').Client} client
+ * @param {InstanceRepository} repo
  */
-export async function useCommands(client) {
+export async function useCommands(client, repo) {
   // Setup
   client.on('ready', async () => {
     await client.application.commands.set([
       new SlashCommandBuilder()
-        .setName('snap')
-        .setDescription('Enables or disables snapcord in this channel.'),
+        .setName('enable')
+        .setDescription('Turns on snapcord in this channel.')
+        .addIntegerOption((option) =>
+          option
+            .setName('duration')
+            .setDescription('Amount of time before a message is deleted.')
+            .addChoices([
+              { name: '24 hours', value: 24 * 60 * 60 * 1000 },
+              { name: '12 hours', value: 12 * 60 * 60 * 1000 },
+              { name: '6 hours', value: 6 * 60 * 60 * 1000 },
+              { name: '15 seconds', value: 15000 },
+            ])
+            .setRequired(true)
+        )
+        .addChannelOption((option) =>
+          option
+            .setName('channel')
+            .setDescription('Which channel to enable (this one by default).')
+            .addChannelTypes([ChannelType.GuildText])
+            .setRequired(false)
+        ),
+      new SlashCommandBuilder()
+        .setName('disable')
+        .setDescription('Turns off snapcord in this channel.')
+        .addChannelOption((option) =>
+          option
+            .setName('channel')
+            .setDescription('Which channel to enable (this one by default).')
+            .addChannelTypes([ChannelType.GuildText])
+            .setRequired(false)
+        ),
     ]);
+    logger.info('registered commands');
   });
 
   // Parse interactions.
   client.on('interactionCreate', async (interaction) => {
-    if (interaction.commandName === 'snap') {
-      _executeSnap(interaction);
+    if (interaction.commandName === 'enable') {
+      _turnOn(interaction, repo);
+    } else if (interaction.commandName == 'disable') {
+      _turnOff(interaction, repo);
+    } else {
+      logger.warn(`unrecognized command '${interaction.commandName}'`);
     }
   });
 }
 /**
  * @param {import('discord.js').Interaction} interaction
+ * @param {InstanceRepository} repo
  */
-async function _executeSnap(interaction) {
-  await interaction.reply('I should probably do something...');
+async function _turnOn(interaction, repo) {
+  /** @type {TextChannel} */
+  const channel = interaction.options.getChannel('channel');
+  /** @type {string} */
+  const channelId = channel?.id || interaction.channelId;
+  const name = channel ? `<#${channel.id}>` : 'this channel';
+
+  logger.info(`enabling for channel ${channelId}`);
+  const instance = await repo.getByChannelId(channelId);
+  if (instance) {
+    logger.warn(`instance exists for channel ${channelId}`);
+    await interaction.reply(`I'm still in ${name} 😎`);
+  } else {
+    await repo.create(channelId, interaction.options.getInteger('duration'));
+    await interaction.reply(`I'm in ${name} 😊`);
+  }
+}
+/**
+ * @param {import('discord.js').Interaction} interaction
+ * @param {InstanceRepository} repo
+ */
+async function _turnOff(interaction, repo) {
+  /** @type {TextChannel} */
+  const channel = interaction.options.getChannel('channel');
+  /** @type {string} */
+  const channelId = channel?.id || interaction.channelId;
+  const name = channel ? `<#${channel.id}>` : 'this channel';
+
+  logger.info(`disabling for channel ${channelId}`);
+  const instance = await repo.getByChannelId(channelId);
+  if (instance) {
+    await repo.delete(instance.id);
+    await interaction.reply(`I'm leaving ${name} 🥺`);
+  } else {
+    await interaction.reply(`I'm not in ${name} 🤔`);
+  }
 }
