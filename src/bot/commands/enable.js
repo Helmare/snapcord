@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
 } from 'discord.js';
 import pino from 'pino';
-import repo from '../../instance.js';
+import instances from '../../model/instances.js';
 
 const logger = pino();
 
@@ -45,14 +45,14 @@ export default {
     const name = channel ? `<#${channel.id}>` : 'this channel';
 
     logger.info({ channelId: channelId }, 'enabling for channel');
-    const instance = await repo.getByChannelId(channelId);
+    const instance = await instances.findByChannelId(channelId);
     if (instance) {
       logger.warn({ channelId: channelId }, 'instance exists for channel');
       await interaction.reply(`I'm still in ${name} 😎`);
     } else {
       const duration = interaction.options.getInteger('duration');
       const hours = duration / (60 * 60 * 1000);
-      await repo.create(channelId, duration);
+      await instances.create(channelId, duration);
       await interaction.reply(
         `I'm here in ${name} 😊 Messages will be deleted after ${hours} hour${
           hours == 1 ? '' : 's'

@@ -1,7 +1,7 @@
 import './config.js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import pino from 'pino';
-import repo from './instance.js';
+import instances from './model/instances.js';
 import { useCommands } from './bot/commands/index.js';
 
 const logger = pino();
@@ -14,16 +14,15 @@ const client = new Client({
   ],
 });
 
+instances.fetch();
 useCommands(client);
 
 client.on('ready', async () => {
   logger.info(`${client.user.tag} is online`);
   setInterval(async () => {
-    const instances = await repo.fetch();
     const startTime = Date.now();
-
     for (const instance of instances) {
-      logger.info(instance, 'running instance');
+      logger.info({ instance, instances }, 'running instance');
       const channel = await _getChannelFromInstance(instance);
       if (!channel) break;
 
@@ -71,7 +70,7 @@ async function _getChannelFromInstance(instance) {
     return channel;
   } catch (err) {
     logger.error(err, 'failed to fetch channel');
-    await repo.delete(instance.id);
+    await instances.delete(instance.id);
     return undefined;
   }
 }

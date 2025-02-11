@@ -4,7 +4,7 @@ import {
   PermissionFlagsBits,
 } from 'discord.js';
 import pino from 'pino';
-import repo from '../../instance.js';
+import instances from '../../model/instances.js';
 
 const logger = pino();
 
@@ -32,9 +32,9 @@ export default {
     const name = channel ? `<#${channel.id}>` : 'this channel';
 
     logger.info({ channelId: channelId }, `disabling in channel`);
-    const instance = await repo.getByChannelId(channelId);
+    const instance = await instances.findByChannelId(channelId);
     if (instance) {
-      await repo.delete(instance.id);
+      await instances.delete(instance.id);
       await interaction.reply(
         `I'm leaving ${name} 🥺 Messages will no longer be deleted.`
       );
