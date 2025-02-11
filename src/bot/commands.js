@@ -4,7 +4,7 @@ import {
   TextChannel,
   PermissionFlagsBits,
 } from 'discord.js';
-import { InstanceRepository } from '../instance.js';
+import repo from '../instance.js';
 import pino from 'pino';
 
 const logger = pino();
@@ -12,9 +12,8 @@ const logger = pino();
 /**
  * Installs the commands on the client.
  * @param {import('discord.js').Client} client
- * @param {InstanceRepository} repo
  */
-export async function useCommands(client, repo) {
+export async function useCommands(client) {
   // Setup
   client.on('ready', async () => {
     await client.application.commands.set([

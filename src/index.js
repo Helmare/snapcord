@@ -1,13 +1,10 @@
+import './config.js';
 import { Client, GatewayIntentBits } from 'discord.js';
-import { InstanceRepository } from './instance.js';
-import { useCommands } from './bot/commands.js';
 import pino from 'pino';
-
-import dotenv from 'dotenv';
-dotenv.config();
+import repo from './instance.js';
+import { useCommands } from './bot/commands.js';
 
 const logger = pino();
-const repo = new InstanceRepository(process.env.DATABASE_URL);
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -17,7 +14,7 @@ const client = new Client({
   ],
 });
 
-useCommands(client, repo);
+useCommands(client);
 
 client.on('ready', async () => {
   logger.info(`${client.user.tag} is online`);

@@ -11,7 +11,7 @@ const logger = pino();
  * @prop {Date} created_at
  */
 
-export class InstanceRepository {
+class InstanceRepository {
   constructor(databaseUrl) {
     this.sql = neon(databaseUrl);
     /** @type {Instance[]} */
@@ -89,3 +89,6 @@ export class InstanceRepository {
     }
   }
 }
+
+const repo = new InstanceRepository(process.env.DATABASE_URL);
+export default repo;
