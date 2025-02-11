@@ -2,7 +2,7 @@ import './config.js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import pino from 'pino';
 import repo from './instance.js';
-import { useCommands } from './bot/commands.js';
+import { useCommands } from './bot/commands/index.js';
 
 const logger = pino();
 const client = new Client({
