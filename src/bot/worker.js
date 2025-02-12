@@ -39,11 +39,11 @@ async function _run(client) {
     const cutoff = Date.now() - instance.max_message_age;
 
     for (const [id, message] of messages) {
-      // Ignore messages with the :floppy_disk: reaction.
-      if (await _hasReaction(message, '💾')) continue;
-
       // Ignore messages that are young.
       if (message.createdTimestamp > cutoff) continue;
+
+      // Ignore messages with the :floppy_disk: reaction.
+      if (await _hasReaction(message, '💾')) continue;
 
       // Delete the rest of the messages.
       try {
