@@ -40,10 +40,10 @@ async function _run(client) {
 
     for (const [id, message] of messages) {
       // Ignore messages with the :floppy_disk: reaction.
-      if (await _hasReaction(message, '💾')) break;
+      if (await _hasReaction(message, '💾')) continue;
 
       // Ignore messages that are young.
-      if (message.createdTimestamp > cutoff) break;
+      if (message.createdTimestamp > cutoff) continue;
 
       // Delete the rest of the messages.
       try {
