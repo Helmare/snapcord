@@ -34,7 +34,7 @@ class InstanceModel {
   /**
    * Finds an instance by channel id in the cache.
    * @param {string} channelId
-   * @return {Promise<Instance>}
+   * @return {Instance|undefined}
    */
   findByChannelId(channelId) {
     return this.cache.find((i) => i.channel_id == channelId);
