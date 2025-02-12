@@ -18,7 +18,7 @@ export default {
     .addChannelOption((option) =>
       option
         .setName('channel')
-        .setDescription('Which channel to enable (this one by default).')
+        .setDescription('Which channel to disable (this one by default).')
         .addChannelTypes([ChannelType.GuildText])
         .setRequired(false)
     )
