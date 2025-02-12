@@ -39,6 +39,10 @@ export default {
         `I'm leaving ${name} 🥺 Messages will no longer be deleted.`
       );
     } else {
+      logger.warn(
+        { channelId: channelId },
+        `instance doesn't exist for channel`
+      );
       await interaction.reply(`I'm not in ${name} 🤔`);
     }
   },

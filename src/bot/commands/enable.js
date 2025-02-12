@@ -38,18 +38,35 @@ export default {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels),
   async execute(interaction) {
+    // Setup
     /** @type {import('discord.js').TextChannel */
     const channel = interaction.options.getChannel('channel');
-    /** @type {string} */
     const channelId = channel?.id || interaction.channelId;
     const name = channel ? `<#${channel.id}>` : 'this channel';
-
     logger.info({ channelId: channelId }, 'enabling for channel');
+
+    // Find instance for the channel.
     const instance = await instances.findByChannelId(channelId);
     if (instance) {
-      logger.warn({ channelId: channelId }, 'instance exists for channel');
-      await interaction.reply(`I'm still in ${name} 😎`);
+      const duration = interaction.options.getInteger('duration');
+      if (instance.max_message_age != duration) {
+        // Update duration.
+        instance.max_message_age = duration;
+        await instances.save(instance);
+
+        const hours = duration / (60 * 60 * 1000);
+        await interaction.reply(
+          `Messages will now be deleted after ${hours} hour${
+            hours == 1 ? '' : 's'
+          } in ${channel}.`
+        );
+      } else {
+        // Already exists and same duration.
+        logger.warn({ channelId: channelId }, 'instance exists for channel');
+        await interaction.reply(`I'm still in ${name} 😎`);
+      }
     } else {
+      // Create new instance for channel.
       const duration = interaction.options.getInteger('duration');
       const hours = duration / (60 * 60 * 1000);
       await instances.create(channelId, duration);

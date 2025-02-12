@@ -21,8 +21,8 @@ client.on('ready', async () => {
   logger.info(`${client.user.tag} is online`);
   setInterval(async () => {
     const startTime = Date.now();
-    for (const instance of instances) {
-      logger.info({ instance, instances }, 'running instance');
+    for (const instance of instances.cache) {
+      logger.info(instance, 'running instance');
       const channel = await _getChannelFromInstance(instance);
       if (!channel) break;
 

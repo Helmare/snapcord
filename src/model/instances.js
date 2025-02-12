@@ -2,43 +2,42 @@ import { neon } from '@neondatabase/serverless';
 import pino from 'pino';
 
 const logger = pino();
+const sql = neon(process.env.DATABASE_URL);
 
-/**
- * @extends {Array<Instance>}
- */
-class InstanceModel extends Array {
-  /**
-   * @param {string?} databaseUrl
-   * @param {Instance[]} items
-   */
-  constructor(databaseUrl, items = []) {
-    super(items);
-    this.sql = neon(databaseUrl || process.env.DATABASE_URL);
+class InstanceModel {
+  constructor() {
+    /** @type {Instance[]} */
+    this.cache = [];
   }
 
   /**
-   * Clears then fetches from the database.
+   * Fetches the results and sets the cache.
+   * @returns {Instance[]}
    */
   async fetch() {
     try {
-      const results = await this.sql`SELECT * FROM instances;`;
-
-      this.length = 0;
-      this.push(...results);
+      const results = await sql`SELECT * FROM instances;`;
+      this.cache.splice(0, this.cache.length, ...results);
 
       logger.info({ count: results.length }, 'fetched instances');
+      return results;
     } catch (err) {
       logger.error('failed to fetch instances');
     }
   }
 
   /**
-   * Gets an instance by channel id.
+   * Finds an instance by ID in the cache.
+   * @param {number} id
+   */
+  find(id) {}
+  /**
+   * Finds an instance by channel id in the cache.
    * @param {string} channelId
    * @return {Promise<Instance>}
    */
   findByChannelId(channelId) {
-    return this.find((i) => i.channel_id == channelId);
+    return this.cache.find((i) => i.channel_id == channelId);
   }
 
   /**
@@ -49,9 +48,9 @@ class InstanceModel extends Array {
    */
   async create(channelId, maxMessageAge) {
     try {
-      const results = await this
-        .sql`INSERT INTO instances (channel_id, max_message_age) VALUES (${channelId}, ${maxMessageAge}) RETURNING *;`;
-      this.push(...results);
+      const results =
+        await sql`INSERT INTO instances (channel_id, max_message_age) VALUES (${channelId}, ${maxMessageAge}) RETURNING *;`;
+      this.cache.push(...results);
 
       logger.info(results[0], 'created new instance');
       return results;
@@ -61,15 +60,33 @@ class InstanceModel extends Array {
     }
   }
   /**
+   * Updates an instance in the database.
+   * @param {Instance} instance
+   * @returns {Promise<void>}
+   */
+  async save(instance) {
+    try {
+      await sql`UPDATE instances SET max_message_age=${instance.max_message_age} WHERE id=${instance.id};`;
+      logger.info({ id: instance.id }, 'updated instance');
+    } catch (err) {
+      logger.error(err, 'failed to update instance');
+    }
+  }
+  /**
    * Delete instance by id.
    * @param {number} id
    * @return {Promise<boolean>}
    */
   async delete(id) {
     try {
-      const results = await this.sql`DELETE FROM instances WHERE id=${id};`;
-      this.splice(0, this.length, ...this.filter((item) => item.id !== id));
-      logger.info({ id }, 'Deleted instance');
+      await sql`DELETE FROM instances WHERE id=${id};`;
+      this.cache.splice(
+        0,
+        this.cache.length,
+        ...this.cache.filter((item) => item.id !== id)
+      );
+
+      logger.info({ id }, 'deleted instance');
       return true;
     } catch (err) {
       logger.error(err, 'failed to delete instance');
