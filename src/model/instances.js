@@ -12,7 +12,7 @@ class InstanceModel {
 
   /**
    * Fetches the results and sets the cache.
-   * @returns {Instance[]}
+   * @returns {Promise<Instance[]>}
    */
   async fetch() {
     try {
