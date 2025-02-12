@@ -29,6 +29,11 @@ async function _start(client) {
  */
 async function _run(client) {
   const startTime = Date.now();
+  const stats = {
+    fetched: 0,
+    deleted: 0,
+    failed: 0,
+  };
   for (const instance of instances.cache) {
     logger.info(instance, 'running instance');
     const channel = await _getChannelFromInstance(client, instance);
@@ -36,6 +41,7 @@ async function _run(client) {
 
     const messages = await channel.messages.fetch({ limit: 100 });
     logger.info({ count: messages.size }, 'fetched messages');
+    stats.fetched += messages.size;
     const cutoff = Date.now() - instance.max_message_age;
 
     for (const [id, message] of messages) {
@@ -48,18 +54,21 @@ async function _run(client) {
       // Delete the rest of the messages.
       try {
         await message.delete();
+        stats.deleted++;
         logger.info({ id: message.id }, 'deleted message');
       } catch (err) {
-        if (err.status == 404) {
-          logger.warn(err);
-        } else {
+        if (err.status != 404) {
+          stats.failed++;
           logger.error(err);
         }
       }
     }
   }
 
-  logger.info({ duration: Date.now() - startTime }, 'completed run');
+  logger.info(
+    { duration: Date.now() - startTime, messages: stats },
+    'completed run'
+  );
 }
 /**
  * Gets a channel or undefined if something went wrong.
