@@ -1,8 +1,4 @@
-import {
-  SlashCommandBuilder,
-  ChannelType,
-  PermissionFlagsBits,
-} from 'discord.js';
+import { SlashCommandBuilder, ChannelType } from 'discord.js';
 import pino from 'pino';
 import instances from '../../model/instances.js';
 
