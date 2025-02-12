@@ -6,16 +6,15 @@ import pino from 'pino';
 const logger = pino();
 
 /**
- *
+ * Installs commands on the client (only use after ready).
  * @param {import('discord.js').Client} client
  */
 export async function useCommands(client) {
-  const commands = [enable, disable, status];
   // Setup
-  client.on('ready', async () => {
-    await client.application.commands.set(commands.map((cmd) => cmd.builder));
-    logger.info('registered commands');
-  });
+  const commands = [enable, disable, status];
+  await client.application.commands.set(commands.map((cmd) => cmd.builder));
+  logger.info('registered commands');
+
   // Execute
   client.on('interactionCreate', async (interaction) => {
     let executed = false;
