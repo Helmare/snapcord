@@ -1,5 +1,6 @@
 import enable from './enable.js';
 import disable from './disable.js';
+import status from './status.js';
 import pino from 'pino';
 
 const logger = pino();
@@ -9,13 +10,10 @@ const logger = pino();
  * @param {import('discord.js').Client} client
  */
 export async function useCommands(client) {
-  const commands = [enable, disable];
+  const commands = [enable, disable, status];
   // Setup
   client.on('ready', async () => {
-    await client.application.commands.set([
-      commands[0].builder,
-      commands[1].builder,
-    ]);
+    await client.application.commands.set(commands.map((cmd) => cmd.builder));
     logger.info('registered commands');
   });
   // Execute
