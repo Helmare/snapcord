@@ -1,5 +1,5 @@
 import pino from 'pino';
-import instances from '../model/instances.js';
+import instances from './model/instances.js';
 
 const logger = pino();
 const worker = { running: false };

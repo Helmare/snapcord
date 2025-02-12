@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChannelType } from 'discord.js';
 import pino from 'pino';
-import instances from '../../model/instances.js';
+import instances from '../model/instances.js';
 
 const logger = pino();
 

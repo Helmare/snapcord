@@ -2,8 +2,8 @@ import './config.js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import pino from 'pino';
 import instances from './model/instances.js';
-import { useCommands } from './bot/commands/index.js';
-import { useWorker } from './bot/worker.js';
+import { useCommands } from './commands/index.js';
+import { useWorker } from './worker.js';
 
 const logger = pino();
 const client = new Client({
