@@ -12,7 +12,7 @@ class InstanceModel {
 
   /**
    * Fetches the results and sets the cache.
-   * @returns {Promise<Instance[]>}
+   * @returns {Promise<Instance[]|undefined>}
    */
   async fetch() {
     try {
@@ -22,7 +22,7 @@ class InstanceModel {
       logger.info({ count: results.length }, 'fetched instances');
       return results;
     } catch (err) {
-      logger.error('failed to fetch instances');
+      logger.error(err, 'failed to fetch instances');
     }
   }
 

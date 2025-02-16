@@ -15,8 +15,12 @@ const client = new Client({
   ],
 });
 
+// Fetch database.
+if (!(await instances.fetch())) {
+  process.exit(1);
+}
+
 client.on('ready', async () => {
-  await instances.fetch();
   await useCommands(client);
   useWorker(client);
 
