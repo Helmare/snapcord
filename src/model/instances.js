@@ -11,6 +11,26 @@ class InstanceModel {
   }
 
   /**
+   * Initializes the instance by running
+   * @returns {Promise<boolean>}
+   */
+  async init() {
+    try {
+      await sql`CREATE TABLE IF NOT EXISTS instances (
+        id SERIAL PRIMARY KEY,
+        channel_id TEXT NOT NULL,
+        max_message_age INT DEFAULT 86400000,
+        
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );`;
+      return true;
+    } catch (err) {
+      logger.error(err, 'failed to initialize');
+      return false;
+    }
+  }
+
+  /**
    * Fetches the results and sets the cache.
    * @returns {Promise<Instance[]|undefined>}
    */
@@ -97,7 +117,12 @@ class InstanceModel {
     }
   }
 }
-export default new InstanceModel();
+
+const instances = new InstanceModel();
+if (!(await instances.init())) {
+  process.exit(1);
+}
+export default instances;
 
 /**
  * @typedef {object} Instance
