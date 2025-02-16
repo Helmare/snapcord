@@ -1,10 +1,11 @@
 {
   "name": "snapcord",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "start": "node .",
+    "dev": "cross-env NODE_ENV=development node . | pino-pretty",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -12,10 +13,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
     "discord.js": "^14.17.3",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "pino": "^9.6.0"
   },
   "prettier": {
     "singleQuote": true
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "pino-pretty": "^13.0.0"
   }
 }
