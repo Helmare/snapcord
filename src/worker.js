@@ -20,7 +20,9 @@ export function useWorker(client) {
 async function _start(client) {
   worker.running = true;
   while (worker.running) {
-    await new Promise((res) => setTimeout(res, 10000)); // Sleep for 10s
+    await new Promise((res) =>
+      setTimeout(res, process.env.SLEEP_DURATION || 60000)
+    );
     await _run(client);
   }
 }
